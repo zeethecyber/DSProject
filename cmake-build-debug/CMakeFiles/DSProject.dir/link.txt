@@ -1,0 +1,1 @@
+/usr/bin/c++  -g   CMakeFiles/DSProject.dir/main.cpp.o  -o DSProject 
