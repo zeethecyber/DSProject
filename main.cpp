@@ -19,7 +19,7 @@ private:
     struct bookNode
     {
         int serialNo;
-        string bookName;
+        string bookName;     //hamza ismail
         string author;
         bool issued=false;  //to check if book is issued or not
         bookNode *nextNode;     //link of next bookNode
