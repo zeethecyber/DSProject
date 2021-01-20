@@ -51,13 +51,67 @@ public:
             tailNode=currentNode;
             totalBooks++;
         }
-//      if there is 1 or more books already in the list. This funtion will add another book at the end of the list.
+//      if there is 1 or more books already in the list. This function will add another book at the end of the list.
         else{
             tailNode->nextNode=currentNode;
             tailNode=currentNode;
             totalBooks++;
         }
     }
+
+    int display_by_author(string author_name ){		//searching books by author name
+        temp = headNode;
+        for (int i=1; i<=totalBooks ;i++){
+            {
+                cout<<"Name of book"<<currentNode -> bookName<<endl;
+                cout<<"author name: "<<temp -> author<<"\t\tbook name: "<<temp -> bookName<<"\t\tid : "<<temp -> serialNo<<endl;
+            }
+            temp = temp -> nextNode;
+        }
+    }
+    int search_by_ISBN(int ISBN ){           	//search book by ISBN number
+        temp = headNode;
+        for (int i=1 ; i<=totalBooks ; i++){
+
+            if(temp -> serialNo == ISBN){
+                cout<<"id : "<<temp -> serialNo<<"\nbook name: "<<temp -> bookName<<"\nauthor name: "<<temp -> author;
+            }
+            temp = temp -> nextNode;
+        }
+    }
+    bookNode *traverse(int index){
+        currentNode = headNode;
+        for(int i=1 ; i<=index ; i++){
+            currentNode = currentNode -> nextNode;
+        }
+        return currentNode;
+    }
+
+    int delete_Book(string book_name){				//Delete any Books
+        currentNode = new bookNode;
+        currentNode = headNode;
+        for (int i=1; i<=totalBooks ; i++){
+            //	cout<<"Name of book"<<currentNode -> bookName<<endl;
+
+            if(currentNode -> bookName == book_name){
+                if(i==1){
+                    currentNode = headNode;
+                    headNode = headNode -> nextNode;
+                }
+                else
+                {
+                    bookNode *prev=traverse(i-1);
+                    currentNode = prev->nextNode;
+                    prev -> nextNode = currentNode -> nextNode;
+
+                }
+                delete currentNode;
+                totalBooks--;
+            }
+            currentNode = currentNode -> nextNode;
+        }
+    }
+
 //      Function to display all books in the linked list
     void display()
     {
