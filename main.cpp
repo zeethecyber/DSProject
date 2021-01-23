@@ -19,27 +19,41 @@ private:
     struct bookNode
     {
         int serialNo;
+        unsigned long long int isbn;
         string bookName;
         string author;
         bool issued=false;  //to check if book is issued or not
         bookNode *nextNode;     //link of next bookNode
+        bookNode *prevNode;
     };
-    int totalBooks;
     bookNode *headNode=new bookNode();      //headNode node of bookNodes
     bookNode *tailNode;                     //tail node of bookNodes
     bookNode *currentNode;                  //this will carry the input from user
     bookNode *temp;                         //this pointer will be used to iterate between book nodes
-public:
-    bookList()
+    struct bookBorrower
     {
-        totalBooks=0;
-    }
+        unsigned long int ID;
+        unsigned long int isbn;
+        string personName;
+        string bookName;
+        bookBorrower *next;
+        bookBorrower *prev;
+    };
+    bookBorrower *head=new bookBorrower();      //headNode node of bookNodes
+    bookBorrower *tail;                     //tail node of bookNodes
+    bookBorrower *current;                  //this will carry the input from user
+    bookBorrower *tempp;                         //this pointer will be used to iterate between book nodes
+    int totalBooks=0;
+    int totalBorrower=0;
+
+public:
 //    inserting bookNode element at the of the list
-    void addBook(int srNo,string name,string auth)
+    void addBook(int srNo,unsigned long int isbN,string name,string auth)
     {
         currentNode=new bookNode();     //Creating new book node
 //      Inserting data
         currentNode->serialNo=srNo;
+        currentNode->isbn=isbN;
         currentNode->bookName=name;
         currentNode->author=auth;
         currentNode->nextNode= nullptr;
@@ -54,61 +68,141 @@ public:
 //      if there is 1 or more books already in the list. This function will add another book at the end of the list.
         else{
             tailNode->nextNode=currentNode;
+            currentNode->prevNode=tailNode;
             tailNode=currentNode;
             totalBooks++;
         }
     }
-
-    int display_by_author(string author_name ){		//searching books by author name
-        temp = headNode;
-        for (int i=1; i<=totalBooks ;i++){
+    void issueBook(unsigned long int isbN, unsigned long int borrower_id,string borrower_name)
+    {
+        temp=headNode;
+        bool found= false;
+        string book_name;
+        for (int i = 0; i < totalBooks; ++i) {
+            if (temp->isbn==isbN)
             {
-                cout<<"Name of book"<<currentNode -> bookName<<endl;
-                cout<<"author name: "<<temp -> author<<"\t\tbook name: "<<temp -> bookName<<"\t\tid : "<<temp -> serialNo<<endl;
+                temp->issued=true;
+                book_name=temp->bookName;
+                found=true;
+                break;
             }
-            temp = temp -> nextNode;
+            temp=temp->nextNode;
+        }
+        if (found==true)
+        {
+            current=new bookBorrower();
+            current->ID=borrower_id;
+            current->personName=borrower_name;
+            current->isbn=isbN;
+            current->bookName=book_name;
+            if (totalBorrower==0)
+            {
+                head=current;
+                tail=current;
+                totalBorrower++;
+            } else{
+                tail->next=current;
+                tail=current;
+                totalBorrower++;
+            }
+            cout<<"\nBook Issued!!";
         }
     }
-    int search_by_ISBN(int ISBN ){           	//search book by ISBN number
-        temp = headNode;
-        for (int i=1 ; i<=totalBooks ; i++){
 
-            if(temp -> serialNo == ISBN){
-                cout<<"id : "<<temp -> serialNo<<"\nbook name: "<<temp -> bookName<<"\nauthor name: "<<temp -> author;
-            }
-            temp = temp -> nextNode;
+    void issuedBooks()
+    {
+        tempp=head;
+        for (int i = 0; i < totalBorrower; ++i) {
+            cout<<"\n-----------------------------------------";
+            cout<<"\nBorrower ID : "<<tempp->ID;
+            cout<<"\nBorrower Name : "<<tempp->personName;
+            cout<<"\nBook Borrowed : "<<tempp->bookName;
+            cout<<"\nBook ISBN : "<<tempp->isbn;
+            cout<<"\n-----------------------------------------";
+            tempp=tempp->next;
         }
     }
-    bookNode *traverse(int index){
-        currentNode = headNode;
-        for(int i=1 ; i<=index ; i++){
-            currentNode = currentNode -> nextNode;
+
+    void depositBook(unsigned long int isbN)
+    {
+        tempp=head;
+        bool found=false;
+        for (int i = 0; i < totalBorrower; ++i) {
+            if (tempp->isbn==isbN)
+            {
+                found=true;
+                break;
+            }
+            tempp=tempp->next;
         }
-        return currentNode;
+        if (tempp==head)
+        {
+            head=head->next;
+            delete tempp;
+            totalBorrower--;
+        } else{
+            tempp->prev=current;
+            current->next=tempp->next;
+            delete tempp;
+            totalBorrower--;
+        }
+
+        temp=headNode;
+        for (int i = 0; i < totalBooks; ++i) {
+            if (temp->isbn==isbN)
+            {
+                temp->issued= false;
+            }
+        }
+        cout<<"Book Deposit Successful";
     }
 
-    int delete_Book(string book_name){				//Delete any Books
-        currentNode = new bookNode;
-        currentNode = headNode;
-        for (int i=1; i<=totalBooks ; i++){
-            //	cout<<"Name of book"<<currentNode -> bookName<<endl;
-
-            if(currentNode -> bookName == book_name){
-                if(i==1){
-                    currentNode = headNode;
-                    headNode = headNode -> nextNode;
-                }
-                else
-                {
-                    bookNode *prev=traverse(i-1);
-                    currentNode = prev->nextNode;
-                    prev -> nextNode = currentNode -> nextNode;
-
-                }
-                delete currentNode;
-                totalBooks--;
+    void displayByAuthor(string authorName ){		//searching books by author name
+        temp=headNode;
+        bool found= false;
+        cout<<"\nBooks by Author "<<authorName;
+        for (int i = 0; i < totalBooks; ++i) {
+            if (temp->author==authorName)
+            {
+                found= true;
+                cout<<"\n--------------------------------------------------";
+                cout<<"\nSerial Number: "<<temp->serialNo;
+                cout<<"\nISBN: "<<temp->isbn;
+                cout<<"\nBook Name : "<<temp->bookName;
+                cout<<"\nAuthor: "<<temp->author;
+                cout<<"\nIssued? : "<<temp->issued;
+                cout<<"\n--------------------------------------------------";
             }
-            currentNode = currentNode -> nextNode;
+            temp=temp->nextNode;
+        }
+        if (found== false)
+        {
+            cout<<"\nNo Book Found!!";
+            cout<<"\n--------------------------------------------------";
+        }
+    }
+    void searchByISBN(unsigned long int isbN){           	//search book by ISBN number
+        temp=headNode;
+        bool found= false;
+        cout<<"\nBook by ISBN "<<isbN;
+        for (int i = 0; i < totalBooks; ++i) {
+            if (temp->isbn==isbN)
+            {
+                found= true;
+                cout<<"\n--------------------------------------------------";
+                cout<<"\nSerial Number: "<<temp->serialNo;
+                cout<<"\nISBN: "<<temp->isbn;
+                cout<<"\nBook Name : "<<temp->bookName;
+                cout<<"\nAuthor: "<<temp->author;
+                cout<<"\nIssued? : "<<temp->issued;
+                cout<<"\n--------------------------------------------------";
+            }
+            temp=temp->nextNode;
+        }
+        if (found== false)
+        {
+            cout<<"\nNo Book Found!!";
+            cout<<"\n--------------------------------------------------";
         }
     }
 
@@ -117,22 +211,122 @@ public:
     {
         temp=headNode;
         for (int i = 0; i < totalBooks; ++i) {
-            cout <<"Serial Number :: "<< temp->serialNo << endl;
-            cout <<"Book Name :: "<< temp->bookName << endl;
-            cout <<"Author Name :: "<< temp->author << endl;
-            cout<<"----------------------------------------------"<<endl;
+            cout<<"\n--------------------------------------------------";
+            cout<<"\nSerial Number: "<<temp->serialNo;
+            cout<<"\nISBN: "<<temp->isbn;
+            cout<<"\nBook Name : "<<temp->bookName;
+            cout<<"\nAuthor: "<<temp->author;
+            cout<<"\nIssued? : "<<temp->issued;
+            cout<<"\n--------------------------------------------------";
             temp=temp->nextNode;
         }
     }
+
+    void deleteBook(unsigned long int isbN)
+    {
+        temp=headNode;
+        bool found=false;
+        for (int i = 0; i < totalBooks; ++i) {
+            if (temp->isbn==isbN)
+            {
+                found=true;
+                break;
+            }
+            temp=temp->nextNode;
+        }
+        if (found)
+        {
+            if (temp==headNode)
+            {
+                headNode=headNode->nextNode;
+                delete temp;
+            } else{
+                currentNode=temp->prevNode;
+                currentNode->nextNode=temp->nextNode;
+                delete temp;
+            }
+            totalBooks--;
+        }
+        cout<<"\nBook Deleted!!";
+    }
 };
 
+
+void mainMenu(bookList ls)
+{
+    int choice,srno=0;
+    unsigned long int id,isbn;
+    string bookName,author,borrowerName;
+    cout<<"----------WELCOME TO LIBRARY MANAGMENT SYSTEM-------------\nCreated by Zeeshan,Muneeb & Hamza";
+    cout<<"\nchoose one option from following (Enter a number)";
+    cout<<"1: Insert a book\n";
+    cout<<"2: Issue a book\n";
+    cout<<"3: Deposit a book\n";
+    cout<<"4: Search a book by Author\n";
+    cout<<"5: Search a book by ISBN\n";
+    cout<<"6: Modify a book\n";
+    cout<<"7: Delete a book\n";
+    loop:cin>>choice;
+    switch (choice) {
+        case 1:
+            srno++;
+            cout<<"Enter ISBN of Book: ";
+            cin>>isbn;
+            cout<<"Enter Name of Book: ";
+            getline(cin,bookName);
+            cout<<"Enter name of Author of Book: ";
+            getline(cin,author);
+            ls.addBook(srno,isbn,bookName,author);
+            cout<<"Book Added!!";
+            mainMenu(ls);
+            break;
+        case 2:
+            cout<<"Enter borrower ID: ";
+            cin>>id;
+            cout<<"Enter borrower name: ";
+            cin>>borrowerName;
+            cout<<"Enter ISBN of Book to borrow: ";
+            cin>>isbn;
+            ls.issueBook(isbn,id,borrowerName);
+            cout<<"Book Issued Successfully";
+            mainMenu(ls);
+            break;
+        case 3:
+            cout<<"Enter ISBN of Book to deposit: ";
+            cin>>isbn;
+            ls.depositBook(isbn);
+            cout<<"Book Deposited Successfully";
+            mainMenu(ls);
+            break;
+        case 4:
+            cout<<"Enter Author Name: ";
+            cin>>author;
+            ls.displayByAuthor(author);
+            mainMenu(ls);
+            break;
+        case 5:
+            cout<<"Enter ISBN: ";
+            cin>>isbn;
+            ls.searchByISBN(isbn);
+            mainMenu(ls);
+            break;
+        case 6:
+            cout<<"We Are working on it, Sorry";
+            break;
+        case 7:
+            cout<<"Enter ISBN to delete a book: ";
+            cin>>isbn;
+            ls.deleteBook(isbn);
+            mainMenu(ls);
+            break;
+        default:
+            cout<<"Wrong Value Entered Please try again!!";
+            goto loop;
+
+    }
+}
 int main()
 {
     bookList list1;
-    list1.addBook(100,"Computer Science","Zeeshan Asif");
-    list1.addBook(101,"Data Structures & Algorithm","Muneeb Akram");
-    list1.addBook(102,"Programming Fundamentals","Hamza Ismail");
-    list1.addBook(103,"Mathematics","Unknown");
-    list1.display();
-    // Muneeb Akram
+    mainMenu(list1);
 }
